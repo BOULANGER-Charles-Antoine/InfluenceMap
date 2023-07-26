@@ -19,7 +19,7 @@ public:
 	TSubclassOf<class AInfluenceMapProjectile> ProjectileClass;
 
 	/** Sound to play each time we fire */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Gameplay)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Gameplay)
 	USoundBase* FireSound;
 	
 	/** AnimMontage to play each time we fire */
