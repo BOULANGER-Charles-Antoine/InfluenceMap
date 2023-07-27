@@ -4,15 +4,15 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/GameModeBase.h"
-#include "InfluenceMapGameMode.generated.h"
+#include "IMGameMode.generated.h"
 
 UCLASS(minimalapi)
-class AInfluenceMapGameMode : public AGameModeBase
+class AIMGameMode : public AGameModeBase
 {
 	GENERATED_BODY()
 
 public:
-	AInfluenceMapGameMode();
+	AIMGameMode();
 };
 
 

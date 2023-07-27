@@ -3,13 +3,13 @@
 using UnrealBuildTool;
 using System.Collections.Generic;
 
-public class InfluenceMapTarget : TargetRules
+public class IMEditorTarget : TargetRules
 {
-	public InfluenceMapTarget(TargetInfo Target) : base(Target)
+	public IMEditorTarget(TargetInfo Target) : base(Target)
 	{
-		Type = TargetType.Game;
+		Type = TargetType.Editor;
 		DefaultBuildSettings = BuildSettingsVersion.V2;
 		IncludeOrderVersion = EngineIncludeOrderVersion.Unreal5_1;
-		ExtraModuleNames.Add("InfluenceMap");
+		ExtraModuleNames.Add("IM");
 	}
 }

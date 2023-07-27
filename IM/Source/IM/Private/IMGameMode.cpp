@@ -1,10 +1,10 @@
 // Copyright Epic Games, Inc. All Rights Reserved.
 
-#include "InfluenceMapGameMode.h"
-#include "InfluenceMapCharacter.h"
+#include "IMGameMode.h"
+#include "IMCharacter.h"
 #include "UObject/ConstructorHelpers.h"
 
-AInfluenceMapGameMode::AInfluenceMapGameMode()
+AIMGameMode::AIMGameMode()
 	: Super()
 {
 	// set default pawn class to our Blueprinted character

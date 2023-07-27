@@ -2,9 +2,9 @@
 
 using UnrealBuildTool;
 
-public class InfluenceMap : ModuleRules
+public class IM : ModuleRules
 {
-	public InfluenceMap(ReadOnlyTargetRules Target) : base(Target)
+	public IM(ReadOnlyTargetRules Target) : base(Target)
 	{
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
 

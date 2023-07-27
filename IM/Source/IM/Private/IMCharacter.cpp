@@ -1,7 +1,7 @@
 // Copyright Epic Games, Inc. All Rights Reserved.
 
-#include "InfluenceMapCharacter.h"
-#include "InfluenceMapProjectile.h"
+#include "IMCharacter.h"
+#include "IMProjectile.h"
 #include "Animation/AnimInstance.h"
 #include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
@@ -10,9 +10,9 @@
 
 
 //////////////////////////////////////////////////////////////////////////
-// AInfluenceMapCharacter
+// AIMCharacter
 
-AInfluenceMapCharacter::AInfluenceMapCharacter()
+AIMCharacter::AIMCharacter()
 {
 	// Character doesnt have a rifle at start
 	bHasRifle = false;
@@ -37,7 +37,7 @@ AInfluenceMapCharacter::AInfluenceMapCharacter()
 
 }
 
-void AInfluenceMapCharacter::BeginPlay()
+void AIMCharacter::BeginPlay()
 {
 	// Call the base class  
 	Super::BeginPlay();
@@ -55,7 +55,7 @@ void AInfluenceMapCharacter::BeginPlay()
 
 //////////////////////////////////////////////////////////////////////////// Input
 
-void AInfluenceMapCharacter::SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent)
+void AIMCharacter::SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent)
 {
 	// Set up action bindings
 	if (UEnhancedInputComponent* EnhancedInputComponent = CastChecked<UEnhancedInputComponent>(PlayerInputComponent))
@@ -65,15 +65,15 @@ void AInfluenceMapCharacter::SetupPlayerInputComponent(class UInputComponent* Pl
 		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Completed, this, &ACharacter::StopJumping);
 
 		//Moving
-		EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &AInfluenceMapCharacter::Move);
+		EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &AIMCharacter::Move);
 
 		//Looking
-		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &AInfluenceMapCharacter::Look);
+		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &AIMCharacter::Look);
 	}
 }
 
 
-void AInfluenceMapCharacter::Move(const FInputActionValue& Value)
+void AIMCharacter::Move(const FInputActionValue& Value)
 {
 	// input is a Vector2D
 	FVector2D MovementVector = Value.Get<FVector2D>();
@@ -86,7 +86,7 @@ void AInfluenceMapCharacter::Move(const FInputActionValue& Value)
 	}
 }
 
-void AInfluenceMapCharacter::Look(const FInputActionValue& Value)
+void AIMCharacter::Look(const FInputActionValue& Value)
 {
 	// input is a Vector2D
 	FVector2D LookAxisVector = Value.Get<FVector2D>();
@@ -99,12 +99,12 @@ void AInfluenceMapCharacter::Look(const FInputActionValue& Value)
 	}
 }
 
-void AInfluenceMapCharacter::SetHasRifle(bool bNewHasRifle)
+void AIMCharacter::SetHasRifle(bool bNewHasRifle)
 {
 	bHasRifle = bNewHasRifle;
 }
 
-bool AInfluenceMapCharacter::GetHasRifle()
+bool AIMCharacter::GetHasRifle()
 {
 	return bHasRifle;
 }

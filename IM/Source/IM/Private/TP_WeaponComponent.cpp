@@ -2,8 +2,8 @@
 
 
 #include "TP_WeaponComponent.h"
-#include "InfluenceMapCharacter.h"
-#include "InfluenceMapProjectile.h"
+#include "IMCharacter.h"
+#include "IMProjectile.h"
 #include "GameFramework/PlayerController.h"
 #include "Camera/PlayerCameraManager.h"
 #include "Kismet/GameplayStatics.h"
@@ -41,7 +41,7 @@ void UTP_WeaponComponent::Fire()
 			ActorSpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButDontSpawnIfColliding;
 	
 			// Spawn the projectile at the muzzle
-			World->SpawnActor<AInfluenceMapProjectile>(ProjectileClass, SpawnLocation, SpawnRotation, ActorSpawnParams);
+			World->SpawnActor<AIMProjectile>(ProjectileClass, SpawnLocation, SpawnRotation, ActorSpawnParams);
 		}
 	}
 	
@@ -63,7 +63,7 @@ void UTP_WeaponComponent::Fire()
 	}
 }
 
-void UTP_WeaponComponent::AttachWeapon(AInfluenceMapCharacter* TargetCharacter)
+void UTP_WeaponComponent::AttachWeapon(AIMCharacter* TargetCharacter)
 {
 	Character = TargetCharacter;
 	if (Character == nullptr)

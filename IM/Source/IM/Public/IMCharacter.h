@@ -5,7 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
 #include "InputActionValue.h"
-#include "InfluenceMapCharacter.generated.h"
+#include "IMCharacter.generated.h"
 
 class UInputComponent;
 class USkeletalMeshComponent;
@@ -15,7 +15,7 @@ class UAnimMontage;
 class USoundBase;
 
 UCLASS(config=Game)
-class AInfluenceMapCharacter : public ACharacter
+class AIMCharacter : public ACharacter
 {
 	GENERATED_BODY()
 
@@ -41,7 +41,7 @@ class AInfluenceMapCharacter : public ACharacter
 
 	
 public:
-	AInfluenceMapCharacter();
+	AIMCharacter();
 
 protected:
 	virtual void BeginPlay();

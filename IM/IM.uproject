@@ -5,7 +5,7 @@
 	"Description": "",
 	"Modules": [
 		{
-			"Name": "InfluenceMap",
+			"Name": "IM",
 			"Type": "Runtime",
 			"LoadingPhase": "Default"
 		}

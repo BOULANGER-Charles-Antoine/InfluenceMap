@@ -4,13 +4,13 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
-#include "InfluenceMapProjectile.generated.h"
+#include "IMProjectile.generated.h"
 
 class USphereComponent;
 class UProjectileMovementComponent;
 
 UCLASS(config=Game)
-class AInfluenceMapProjectile : public AActor
+class AIMProjectile : public AActor
 {
 	GENERATED_BODY()
 
@@ -23,7 +23,7 @@ class AInfluenceMapProjectile : public AActor
 	UProjectileMovementComponent* ProjectileMovement;
 
 public:
-	AInfluenceMapProjectile();
+	AIMProjectile();
 
 	/** called when projectile hits something */
 	UFUNCTION()
