@@ -6,14 +6,36 @@
 #include "GameFramework/Actor.h"
 #include "InfluenceMap.generated.h"
 
+USTRUCT()
+struct FIMPair
+{
+	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere)
+	FString Name{};
+
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<class UInfluenceLayer> Layer{};
+};
+
 UCLASS()
 class IM_API AInfluenceMap : public AActor
 {
 	GENERATED_BODY()
+
+private:
+	UPROPERTY(EditDefaultsOnly)
+	TArray<FIMPair> InfluenceMap{};
+
+protected:
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	class UStaticMeshComponent* LimitsInfluenceMap{};
 	
 public:	
 	// Sets default values for this actor's properties
 	AInfluenceMap();
+
+// TODO : Functions for dimension and one for offset (origin) using GetActorBounds
 
 protected:
 	// Called when the game starts or when spawned
