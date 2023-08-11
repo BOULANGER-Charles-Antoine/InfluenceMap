@@ -35,7 +35,9 @@ public:
 	// Sets default values for this actor's properties
 	AInfluenceMap();
 
-// TODO : Functions for dimension and one for offset (origin) using GetActorBounds
+private:
+	UFUNCTION()
+	FVector OffsetMap();
 
 protected:
 	// Called when the game starts or when spawned

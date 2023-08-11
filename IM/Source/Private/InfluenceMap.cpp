@@ -2,6 +2,8 @@
 
 #include "InfluenceMap.h"
 
+#include "InfluenceLayer.h"
+#include "Algo/ForEach.h"
 #include "Components/StaticMeshComponent.h"
 
 // Sets default values
@@ -18,11 +20,22 @@ AInfluenceMap::AInfluenceMap()
 	LimitsInfluenceMap->SetupAttachment(RootComponent);
 }
 
+FVector AInfluenceMap::OffsetMap()
+{
+	return LimitsInfluenceMap->Bounds.Origin;
+}
+
 // Called when the game starts or when spawned
 void AInfluenceMap::BeginPlay()
 {
 	Super::BeginPlay();
+
+	Algo::ForEach(InfluenceMap, [&](FIMPair& Pair)
+	{
+		Pair.Layer.GetDefaultObject()->CreateLayer(LimitsInfluenceMap->Bounds.BoxExtent);
+	});
 	
+	FVector OriginTest = OffsetMap(); // test
 }
 
 // Called every frame
