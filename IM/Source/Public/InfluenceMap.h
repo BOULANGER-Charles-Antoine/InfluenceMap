@@ -29,15 +29,11 @@ private:
 
 protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-	class UStaticMeshComponent* LimitsInfluenceMap{};
+	UStaticMeshComponent* LimitsInfluenceMap{};
 	
 public:	
 	// Sets default values for this actor's properties
 	AInfluenceMap();
-
-private:
-	UFUNCTION()
-	FVector OffsetMap();
 
 protected:
 	// Called when the game starts or when spawned
@@ -47,4 +43,6 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
+	UFUNCTION(BlueprintCallable)
+	void Debug();
 };

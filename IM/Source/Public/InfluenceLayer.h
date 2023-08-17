@@ -19,6 +19,8 @@ private:
 
 	UPROPERTY()
 	FVector DimensionsLayer{};
+	UPROPERTY()
+	FVector OffsetMap{};
 
 public:
 	UInfluenceLayer();
@@ -26,12 +28,22 @@ public:
 	int GetSizeCase() const noexcept;
 
 	UFUNCTION()
-	void CreateLayer(const FVector& BoxExtentInfluenceMap);
+	void CreateLayer(const FBoxSphereBounds& BoxBounds);
 
 	UFUNCTION()
 	int SizeMap();
 
+	TOptional<float> GetValue(const FVector& Position);
+	TOptional<float> GetValue(const int& Index);
+	void Debug(class UWorld* World, const FBoxSphereBounds& BoxBounds);
+
 private:
 	void SetDimensions(const FVector& BoxExtentInfluenceMap);
+	void SetOffset(const FVector& BoxOriginInfluenceMap);
 	void InitializeMapValue();
+
+	int ConvertVector3DToIndex(const FVector& Position);
+	FVector ConvertIndexToVector3D(const int& Index);
+
+	// TODO : operator [] instead of GetValue
 };

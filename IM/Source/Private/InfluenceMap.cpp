@@ -16,13 +16,9 @@ AInfluenceMap::AInfluenceMap()
 	if(ConstructorHelpers::FObjectFinder<UStaticMesh> CubeMesh = (TEXT("StaticMesh'/Engine/BasicShapes/Cube.Cube'")); CubeMesh.Succeeded())
 	{
 		LimitsInfluenceMap->SetStaticMesh(Cast<UStaticMesh>(CubeMesh.Object));
+		LimitsInfluenceMap->SetCollisionResponseToAllChannels(ECR_Ignore);
 	}
 	LimitsInfluenceMap->SetupAttachment(RootComponent);
-}
-
-FVector AInfluenceMap::OffsetMap()
-{
-	return LimitsInfluenceMap->Bounds.Origin;
 }
 
 // Called when the game starts or when spawned
@@ -30,12 +26,10 @@ void AInfluenceMap::BeginPlay()
 {
 	Super::BeginPlay();
 
-	Algo::ForEach(InfluenceMap, [&](FIMPair& Pair)
+	Algo::ForEach(InfluenceMap, [&](FIMPair& IMPair)
 	{
-		Pair.Layer.GetDefaultObject()->CreateLayer(LimitsInfluenceMap->Bounds.BoxExtent);
+		IMPair.Layer.GetDefaultObject()->CreateLayer(LimitsInfluenceMap->Bounds);
 	});
-	
-	FVector OriginTest = OffsetMap(); // test
 }
 
 // Called every frame
@@ -43,5 +37,10 @@ void AInfluenceMap::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 	
+}
+
+void AInfluenceMap::Debug()
+{
+	InfluenceMap[0].Layer.GetDefaultObject()->Debug(GetWorld(), LimitsInfluenceMap->Bounds);
 }
 
