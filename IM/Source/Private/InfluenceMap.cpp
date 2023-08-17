@@ -30,6 +30,8 @@ void AInfluenceMap::BeginPlay()
 	{
 		IMPair.Layer.GetDefaultObject()->CreateLayer(LimitsInfluenceMap->Bounds);
 	});
+
+	Debug();
 }
 
 // Called every frame

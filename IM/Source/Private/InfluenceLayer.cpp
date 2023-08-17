@@ -24,7 +24,7 @@ void UInfluenceLayer::SetOffset(const FVector& BoxOriginInfluenceMap)
 
 void UInfluenceLayer::InitializeMapValue()
 {
-	MapValue.SetNumZeroed(SizeMap());
+	MapValue.SetNumZeroed(SizeLayer);
 }
 
 int UInfluenceLayer::ConvertVector3DToIndex(const FVector& Position)
@@ -46,22 +46,23 @@ void UInfluenceLayer::CreateLayer(const FBoxSphereBounds& BoxBounds)
 	// TODO : attention au rotation de la map
 	SetDimensions(BoxBounds.BoxExtent);
 	SetOffset(BoxBounds.Origin);
+	SetSizeLayer();
 	InitializeMapValue();
 }
 
-int UInfluenceLayer::SizeMap()
+void UInfluenceLayer::SetSizeLayer()
 {
-	return DimensionsLayer.X * DimensionsLayer.Y * DimensionsLayer.Z;
+	SizeLayerXY = DimensionsLayer.X * DimensionsLayer.Y;
+	SizeLayer = SizeLayerXY * DimensionsLayer.Z;
 }
 
 TOptional<float> UInfluenceLayer::GetValue(const FVector& Position)
 {
 	TOptional<float> Value{};
-
-	FVector DistanceOriginMapPosition = Position - OffsetMap;
-	if((Position.X >= 0 && Position.X <= DimensionsLayer.X * SizeCase) && 
-	   (Position.Y >= 0 && Position.Y <= DimensionsLayer.Y * SizeCase) &&
-	   (Position.Z >= 0 && Position.Z <= DimensionsLayer.Z * SizeCase))
+	
+	if((Position.X >= OffsetMap.X && Position.X <= DimensionsLayer.X * SizeCase) && 
+	   (Position.Y >= OffsetMap.Y && Position.Y <= DimensionsLayer.Y * SizeCase) &&
+	   (Position.Z >= OffsetMap.Z && Position.Z <= DimensionsLayer.Z * SizeCase))
 	{
 		Value.Emplace(MapValue[ConvertVector3DToIndex(Position)]);
 	}
@@ -71,38 +72,42 @@ TOptional<float> UInfluenceLayer::GetValue(const FVector& Position)
 
 TOptional<float> UInfluenceLayer::GetValue(const int& Index)
 {
-	return TOptional<float>{};
+	return Index >= 0 && Index < SizeLayer ? TOptional<float>{MapValue[Index]} : TOptional<float>{};
 }
 
 void UInfluenceLayer::Debug(UWorld* World, const FBoxSphereBounds& BoxBounds)
 {
-	FVector OriginCaseDebug = BoxBounds.Origin - BoxBounds.BoxExtent + SizeCase;
-	FVector OriginMapDebug = OriginCaseDebug;
-	FVector RealSizeCase{ static_cast<double>(SizeCase), static_cast<double>(SizeCase), static_cast<double>(SizeCase) };
+	FVector CenterCaseDebug = BoxBounds.Origin - BoxBounds.BoxExtent + SizeCase;
+	const FVector CenterFirstCaseDebug = CenterCaseDebug;
+	FVector VectorSizeCase{ static_cast<double>(SizeCase), static_cast<double>(SizeCase), static_cast<double>(SizeCase) };
 
 	int Index = 0;
 	Algo::ForEach(MapValue, [&](const int& Value) 
 	{
-		DrawDebugBox(World, OriginCaseDebug, RealSizeCase, FColor::Blue, true, 60, 0, 1);
-		DrawDebugString(World, OriginCaseDebug - SizeCase / 10, FString::Printf(TEXT("%d\n%d"), Value, Index), 0, FColor::White, 10, false, 1);
-
-		++Index;
-		if(Index % static_cast<int>(DimensionsLayer.X * DimensionsLayer.Y) == 0)
-		{
-			OriginCaseDebug.X = OriginMapDebug.X;
-			OriginCaseDebug.Y = OriginMapDebug.Y;
-			OriginCaseDebug.Z += 2 * SizeCase;
-		}
-		else if(Index % static_cast<int>(DimensionsLayer.X) == 0)
-		{
-			OriginCaseDebug.X = OriginMapDebug.X;
-			OriginCaseDebug.Y += 2 * SizeCase;
-		}
-		else
-		{
-			OriginCaseDebug.X += 2 * SizeCase;
-		}
+		DrawDebugBox(World, CenterCaseDebug, VectorSizeCase, FColor::Blue, true);
+		DrawDebugString(World, CenterCaseDebug - SizeCase / 10, FString::Printf(TEXT("%d\n%d"), Value, Index));
+		
+		UpdateCenterCaseDebug(CenterCaseDebug, CenterFirstCaseDebug, ++Index);
 	});
+}
+
+void UInfluenceLayer::UpdateCenterCaseDebug(FVector& CenterCaseDebug, const FVector& CenterFirstCaseDebug, const int& Index)
+{
+	if (Index % SizeLayerXY == 0) 
+	{
+		CenterCaseDebug.X = CenterFirstCaseDebug.X;
+		CenterCaseDebug.Y = CenterFirstCaseDebug.Y;
+		CenterCaseDebug.Z += 2 * SizeCase;
+	}
+	else if (Index % static_cast<int>(DimensionsLayer.X) == 0)
+	{
+		CenterCaseDebug.X = CenterFirstCaseDebug.X;
+		CenterCaseDebug.Y += 2 * SizeCase;
+	}
+	else 
+	{
+		CenterCaseDebug.X += 2 * SizeCase;
+	}
 }
 
 int UInfluenceLayer::GetSizeCase() const noexcept

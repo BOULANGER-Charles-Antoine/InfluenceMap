@@ -5,6 +5,8 @@
 #include "CoreMinimal.h"
 #include "InfluenceLayer.generated.h"
 
+// TODO : Helper class for Debug part
+
 UCLASS(Blueprintable, BlueprintType)
 class IM_API UInfluenceLayer : public UObject 
 {
@@ -15,12 +17,16 @@ private:
 	int SizeCase{};
 
 	UPROPERTY()
-	TArray<int> MapValue{};
+	TArray<float> MapValue{};
 
 	UPROPERTY()
 	FVector DimensionsLayer{};
 	UPROPERTY()
 	FVector OffsetMap{};
+	UPROPERTY()
+	int SizeLayer;
+	UPROPERTY()
+	int SizeLayerXY;
 
 public:
 	UInfluenceLayer();
@@ -31,11 +37,13 @@ public:
 	void CreateLayer(const FBoxSphereBounds& BoxBounds);
 
 	UFUNCTION()
-	int SizeMap();
+	void SetSizeLayer();
 
 	TOptional<float> GetValue(const FVector& Position);
 	TOptional<float> GetValue(const int& Index);
-	void Debug(class UWorld* World, const FBoxSphereBounds& BoxBounds);
+
+	void Debug(UWorld* World, const FBoxSphereBounds& BoxBounds);
+	void UpdateCenterCaseDebug(FVector& CenterCaseDebug, const FVector& CenterFirstCaseDebug, const int& Index);
 
 private:
 	void SetDimensions(const FVector& BoxExtentInfluenceMap);
