@@ -26,20 +26,28 @@ class IM_API AInfluenceMap : public AActor
 private:
 	UPROPERTY(EditDefaultsOnly)
 	TArray<FIMPair> InfluenceMap{};
+protected:
+	UPROPERTY(BlueprintReadOnly)
+	FRotator IMRotation{};
+
+	UPROPERTY(BlueprintReadOnly)
+	FVector IMDimension{};
 
 protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	UStaticMeshComponent* LimitsInfluenceMap{};
 	
-public:	
-	// Sets default values for this actor's properties
-	AInfluenceMap();
+private:
+	FVector RotatePointAroundIM(const FVector& Point);
 
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
-public:	
+public:
+	// Sets default values for this actor's properties
+	AInfluenceMap();
+
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 

@@ -5,6 +5,7 @@
 #include "InfluenceLayer.h"
 #include "Algo/ForEach.h"
 #include "Components/StaticMeshComponent.h"
+#include "Kismet/KismetMathLibrary.h"
 
 // Sets default values
 AInfluenceMap::AInfluenceMap()
@@ -21,14 +22,29 @@ AInfluenceMap::AInfluenceMap()
 	LimitsInfluenceMap->SetupAttachment(RootComponent);
 }
 
+FVector AInfluenceMap::RotatePointAroundIM(const FVector& Point)
+{
+	FTransform TransformedOrigin = UKismetMathLibrary::Conv_VectorToTransform(LimitsInfluenceMap->Bounds.Origin);
+
+	FVector RotatedPoint = UKismetMathLibrary::InverseTransformLocation(TransformedOrigin, Point);
+	RotatedPoint = IMRotation.RotateVector(RotatedPoint);
+
+	return UKismetMathLibrary::TransformLocation(TransformedOrigin, RotatedPoint);
+}
+
 // Called when the game starts or when spawned
 void AInfluenceMap::BeginPlay()
 {
 	Super::BeginPlay();
 
+	IMRotation = GetActorRotation();
+	SetActorRotation(FRotator::ZeroRotator);
+	IMDimension = LimitsInfluenceMap->Bounds.BoxExtent;
+	SetActorRotation(IMRotation);
+
 	Algo::ForEach(InfluenceMap, [&](FIMPair& IMPair)
 	{
-		IMPair.Layer.GetDefaultObject()->CreateLayer(LimitsInfluenceMap->Bounds);
+		IMPair.Layer.GetDefaultObject()->CreateLayer(LimitsInfluenceMap->Bounds.Origin, IMDimension);
 	});
 
 	Debug();
@@ -43,6 +59,22 @@ void AInfluenceMap::Tick(float DeltaTime)
 
 void AInfluenceMap::Debug()
 {
-	InfluenceMap[0].Layer.GetDefaultObject()->Debug(GetWorld(), LimitsInfluenceMap->Bounds);
+	// Find Layer then ...
+	auto Layer = InfluenceMap[0].Layer;
+
+	FVector VectorSizeCase{ static_cast<double>(Layer.GetDefaultObject()->GetSizeCase()) };
+	FVector CenterCaseDebug = LimitsInfluenceMap->Bounds.Origin - IMDimension;
+	FVector CenterCaseDebugRotated = RotatePointAroundIM(CenterCaseDebug) + IMRotation.RotateVector(VectorSizeCase);
+	const FVector CenterFirstCaseDebug = CenterCaseDebug;
+
+	int Index = 0;
+	Algo::ForEach(Layer.GetDefaultObject()->GetLayerValue(), [&](const float& Value) 
+	{
+		DrawDebugBox(GetWorld(), CenterCaseDebugRotated, VectorSizeCase, IMRotation.Quaternion(), FColor::Blue, true);
+		DrawDebugString(GetWorld(), CenterCaseDebugRotated, FString::Printf(TEXT("%f\n%d"), Value, Index)); // TODO : fix format float Value
+
+		Layer.GetDefaultObject()->UpdateCenterCaseDebug(CenterCaseDebug, CenterFirstCaseDebug, ++Index);
+		CenterCaseDebugRotated = RotatePointAroundIM(CenterCaseDebug) + IMRotation.RotateVector(VectorSizeCase);
+	});
 }
 

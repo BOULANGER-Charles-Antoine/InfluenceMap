@@ -24,7 +24,7 @@ void UInfluenceLayer::SetOffset(const FVector& BoxOriginInfluenceMap)
 
 void UInfluenceLayer::InitializeMapValue()
 {
-	MapValue.SetNumZeroed(SizeLayer);
+	LayerValue.SetNumZeroed(SizeLayer);
 }
 
 int UInfluenceLayer::ConvertVector3DToIndex(const FVector& Position)
@@ -41,11 +41,11 @@ FVector UInfluenceLayer::ConvertIndexToVector3D(const int& Index)
 	return FVector{ X, Y, Z };
 }
 
-void UInfluenceLayer::CreateLayer(const FBoxSphereBounds& BoxBounds)
+void UInfluenceLayer::CreateLayer(const FVector& Origin, const FVector& Extent)
 {
 	// TODO : attention au rotation de la map
-	SetDimensions(BoxBounds.BoxExtent);
-	SetOffset(BoxBounds.Origin);
+	SetDimensions(Extent);
+	SetOffset(Origin);
 	SetSizeLayer();
 	InitializeMapValue();
 }
@@ -64,7 +64,7 @@ TOptional<float> UInfluenceLayer::GetValue(const FVector& Position)
 	   (Position.Y >= OffsetMap.Y && Position.Y <= DimensionsLayer.Y * SizeCase) &&
 	   (Position.Z >= OffsetMap.Z && Position.Z <= DimensionsLayer.Z * SizeCase))
 	{
-		Value.Emplace(MapValue[ConvertVector3DToIndex(Position)]);
+		Value.Emplace(LayerValue[ConvertVector3DToIndex(Position)]);
 	}
 
 	return Value;
@@ -72,7 +72,7 @@ TOptional<float> UInfluenceLayer::GetValue(const FVector& Position)
 
 TOptional<float> UInfluenceLayer::GetValue(const int& Index)
 {
-	return Index >= 0 && Index < SizeLayer ? TOptional<float>{MapValue[Index]} : TOptional<float>{};
+	return Index >= 0 && Index < SizeLayer ? TOptional<float>{LayerValue[Index]} : TOptional<float>{};
 }
 
 void UInfluenceLayer::Debug(UWorld* World, const FBoxSphereBounds& BoxBounds)
@@ -82,7 +82,7 @@ void UInfluenceLayer::Debug(UWorld* World, const FBoxSphereBounds& BoxBounds)
 	FVector VectorSizeCase{ static_cast<double>(SizeCase), static_cast<double>(SizeCase), static_cast<double>(SizeCase) };
 
 	int Index = 0;
-	Algo::ForEach(MapValue, [&](const int& Value) 
+	Algo::ForEach(LayerValue, [&](const int& Value) 
 	{
 		DrawDebugBox(World, CenterCaseDebug, VectorSizeCase, FColor::Blue, true);
 		DrawDebugString(World, CenterCaseDebug - SizeCase / 10, FString::Printf(TEXT("%d\n%d"), Value, Index));
@@ -113,4 +113,9 @@ void UInfluenceLayer::UpdateCenterCaseDebug(FVector& CenterCaseDebug, const FVec
 int UInfluenceLayer::GetSizeCase() const noexcept
 {
 	return SizeCase;
+}
+
+const TArray<float>& UInfluenceLayer::GetLayerValue() const noexcept
+{
+	return LayerValue;
 }

@@ -17,7 +17,7 @@ private:
 	int SizeCase{};
 
 	UPROPERTY()
-	TArray<float> MapValue{};
+	TArray<float> LayerValue{};
 
 	UPROPERTY()
 	FVector DimensionsLayer{};
@@ -32,9 +32,10 @@ public:
 	UInfluenceLayer();
 
 	int GetSizeCase() const noexcept;
+	const TArray<float>& GetLayerValue() const noexcept;
 
 	UFUNCTION()
-	void CreateLayer(const FBoxSphereBounds& BoxBounds);
+	void CreateLayer(const FVector& Origin, const FVector& Extent);
 
 	UFUNCTION()
 	void SetSizeLayer();
