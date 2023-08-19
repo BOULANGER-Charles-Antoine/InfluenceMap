@@ -26,6 +26,9 @@ class IM_API AInfluenceMap : public AActor
 private:
 	UPROPERTY(EditDefaultsOnly)
 	TArray<FIMPair> InfluenceMap{};
+
+	UPROPERTY(EditDefaultsOnly, Category = "Debug")
+	bool ShowZeroDebug{};
 protected:
 	UPROPERTY(BlueprintReadOnly)
 	FRotator IMRotation{};
@@ -38,7 +41,7 @@ protected:
 	UStaticMeshComponent* LimitsInfluenceMap{};
 	
 private:
-	FVector RotatePointAroundIM(const FVector& Point);
+	FVector RotatePointAroundIM(const FVector& Point) const;
 
 protected:
 	// Called when the game starts or when spawned
@@ -53,4 +56,5 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	void Debug();
+	void ShowDebugValue(const float& Value, const FVector& CenterCaseDebug);
 };

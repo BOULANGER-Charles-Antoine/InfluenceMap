@@ -5,7 +5,6 @@
 #include "InfluenceLayer.h"
 #include "Algo/ForEach.h"
 #include "Components/StaticMeshComponent.h"
-#include "Kismet/KismetMathLibrary.h"
 
 // Sets default values
 AInfluenceMap::AInfluenceMap()
@@ -14,7 +13,7 @@ AInfluenceMap::AInfluenceMap()
 	PrimaryActorTick.bCanEverTick = false;
 
 	LimitsInfluenceMap = CreateDefaultSubobject<UStaticMeshComponent>(FName("Limit Influence Map"));
-	if(ConstructorHelpers::FObjectFinder<UStaticMesh> CubeMesh = (TEXT("StaticMesh'/Engine/BasicShapes/Cube.Cube'")); CubeMesh.Succeeded())
+	if(ConstructorHelpers::FObjectFinder<UStaticMesh> CubeMesh = TEXT("StaticMesh'/Engine/BasicShapes/Cube.Cube'"); CubeMesh.Succeeded())
 	{
 		LimitsInfluenceMap->SetStaticMesh(Cast<UStaticMesh>(CubeMesh.Object));
 		LimitsInfluenceMap->SetCollisionResponseToAllChannels(ECR_Ignore);
@@ -22,14 +21,14 @@ AInfluenceMap::AInfluenceMap()
 	LimitsInfluenceMap->SetupAttachment(RootComponent);
 }
 
-FVector AInfluenceMap::RotatePointAroundIM(const FVector& Point)
+FVector AInfluenceMap::RotatePointAroundIM(const FVector& Point) const
 {
-	FTransform TransformedOrigin = UKismetMathLibrary::Conv_VectorToTransform(LimitsInfluenceMap->Bounds.Origin);
-
-	FVector RotatedPoint = UKismetMathLibrary::InverseTransformLocation(TransformedOrigin, Point);
+	const FTransform TransformedOrigin = FTransform(LimitsInfluenceMap->Bounds.Origin);
+	
+	FVector RotatedPoint = TransformedOrigin.InverseTransformPosition(Point);
 	RotatedPoint = IMRotation.RotateVector(RotatedPoint);
 
-	return UKismetMathLibrary::TransformLocation(TransformedOrigin, RotatedPoint);
+	return TransformedOrigin.TransformPosition(RotatedPoint);
 }
 
 // Called when the game starts or when spawned
@@ -71,10 +70,24 @@ void AInfluenceMap::Debug()
 	Algo::ForEach(Layer.GetDefaultObject()->GetLayerValue(), [&](const float& Value) 
 	{
 		DrawDebugBox(GetWorld(), CenterCaseDebugRotated, VectorSizeCase, IMRotation.Quaternion(), FColor::Blue, true);
-		DrawDebugString(GetWorld(), CenterCaseDebugRotated, FString::Printf(TEXT("%f\n%d"), Value, Index)); // TODO : fix format float Value
+
+		if(Value > 0.001f || Value <= 0.001 && ShowZeroDebug)
+		{
+			ShowDebugValue(Value, CenterCaseDebugRotated);
+		}
 
 		Layer.GetDefaultObject()->UpdateCenterCaseDebug(CenterCaseDebug, CenterFirstCaseDebug, ++Index);
 		CenterCaseDebugRotated = RotatePointAroundIM(CenterCaseDebug) + IMRotation.RotateVector(VectorSizeCase);
 	});
 }
 
+void AInfluenceMap::ShowDebugValue(const float& Value, const FVector& CenterCaseDebug)
+{
+	FNumberFormattingOptions NumberFormat;
+	NumberFormat.MinimumIntegralDigits = 1;
+	NumberFormat.MaximumIntegralDigits = 10000;
+	NumberFormat.MinimumFractionalDigits = 0;
+	NumberFormat.MaximumFractionalDigits = 2;
+
+	DrawDebugString(GetWorld(), CenterCaseDebug, FText::AsNumber(Value, &NumberFormat).ToString());
+}

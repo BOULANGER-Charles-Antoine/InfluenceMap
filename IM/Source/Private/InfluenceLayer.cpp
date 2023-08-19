@@ -25,6 +25,7 @@ void UInfluenceLayer::SetOffset(const FVector& BoxOriginInfluenceMap)
 void UInfluenceLayer::InitializeMapValue()
 {
 	LayerValue.SetNumZeroed(SizeLayer);
+	LayerValue[2] = 1.5486f;
 }
 
 int UInfluenceLayer::ConvertVector3DToIndex(const FVector& Position)
