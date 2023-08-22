@@ -1,5 +1,3 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
 #pragma once
 
 #include "CoreMinimal.h"
@@ -29,6 +27,7 @@ private:
 
 	UPROPERTY(EditDefaultsOnly, Category = "Debug")
 	bool ShowZeroDebug{};
+
 protected:
 	UPROPERTY(BlueprintReadOnly)
 	FRotator IMRotation{};
@@ -39,9 +38,6 @@ protected:
 protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	UStaticMeshComponent* LimitsInfluenceMap{};
-	
-private:
-	FVector RotatePointAroundIM(const FVector& Point) const;
 
 protected:
 	// Called when the game starts or when spawned
@@ -51,10 +47,13 @@ public:
 	// Sets default values for this actor's properties
 	AInfluenceMap();
 
+	const TArray<FIMPair>& GetLayers() const noexcept;
+	bool GetShowZeroDebug() const noexcept;
+	FRotator GetIMRotation() const noexcept;
+
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
 	UFUNCTION(BlueprintCallable)
-	void Debug();
-	void ShowDebugValue(const float& Value, const FVector& CenterCaseDebug);
+	void Debug(const FString& NameLayer);
 };

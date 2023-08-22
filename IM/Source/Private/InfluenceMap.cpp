@@ -1,15 +1,14 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
 #include "InfluenceMap.h"
 
 #include "InfluenceLayer.h"
+#include "InfluenceMapDebugHelper.h"
+#include "InfluenceTile.h"
 #include "Algo/ForEach.h"
 #include "Components/StaticMeshComponent.h"
 
-// Sets default values
+
 AInfluenceMap::AInfluenceMap()
 {
- 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = false;
 
 	LimitsInfluenceMap = CreateDefaultSubobject<UStaticMeshComponent>(FName("Limit Influence Map"));
@@ -21,17 +20,22 @@ AInfluenceMap::AInfluenceMap()
 	LimitsInfluenceMap->SetupAttachment(RootComponent);
 }
 
-FVector AInfluenceMap::RotatePointAroundIM(const FVector& Point) const
+const TArray<FIMPair>& AInfluenceMap::GetLayers() const noexcept
 {
-	const FTransform TransformedOrigin = FTransform(LimitsInfluenceMap->Bounds.Origin);
-	
-	FVector RotatedPoint = TransformedOrigin.InverseTransformPosition(Point);
-	RotatedPoint = IMRotation.RotateVector(RotatedPoint);
-
-	return TransformedOrigin.TransformPosition(RotatedPoint);
+	return InfluenceMap;
 }
 
-// Called when the game starts or when spawned
+bool AInfluenceMap::GetShowZeroDebug() const noexcept
+{
+	return ShowZeroDebug;
+}
+
+FRotator AInfluenceMap::GetIMRotation() const noexcept
+{
+	return IMRotation;
+}
+
+
 void AInfluenceMap::BeginPlay()
 {
 	Super::BeginPlay();
@@ -43,51 +47,20 @@ void AInfluenceMap::BeginPlay()
 
 	Algo::ForEach(InfluenceMap, [&](FIMPair& IMPair)
 	{
-		IMPair.Layer.GetDefaultObject()->CreateLayer(LimitsInfluenceMap->Bounds.Origin, IMDimension);
+		IMPair.Layer.GetDefaultObject()->CreateLayer(LimitsInfluenceMap->Bounds.Origin, IMDimension, IMRotation);
 	});
 
-	Debug();
+	Debug("Test2");
 }
 
-// Called every frame
 void AInfluenceMap::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 	
 }
 
-void AInfluenceMap::Debug()
+void AInfluenceMap::Debug(const FString& NameLayer)
 {
-	// Find Layer then ...
-	auto Layer = InfluenceMap[0].Layer;
-
-	FVector VectorSizeCase{ static_cast<double>(Layer.GetDefaultObject()->GetSizeCase()) };
-	FVector CenterCaseDebug = LimitsInfluenceMap->Bounds.Origin - IMDimension;
-	FVector CenterCaseDebugRotated = RotatePointAroundIM(CenterCaseDebug) + IMRotation.RotateVector(VectorSizeCase);
-	const FVector CenterFirstCaseDebug = CenterCaseDebug;
-
-	int Index = 0;
-	Algo::ForEach(Layer.GetDefaultObject()->GetLayerValue(), [&](const float& Value) 
-	{
-		DrawDebugBox(GetWorld(), CenterCaseDebugRotated, VectorSizeCase, IMRotation.Quaternion(), FColor::Blue, true);
-
-		if(Value > 0.001f || Value <= 0.001 && ShowZeroDebug)
-		{
-			ShowDebugValue(Value, CenterCaseDebugRotated);
-		}
-
-		Layer.GetDefaultObject()->UpdateCenterCaseDebug(CenterCaseDebug, CenterFirstCaseDebug, ++Index);
-		CenterCaseDebugRotated = RotatePointAroundIM(CenterCaseDebug) + IMRotation.RotateVector(VectorSizeCase);
-	});
+	InfluenceMapDebugHelper::ShowInfluenceMapDebug(this, NameLayer);
 }
 
-void AInfluenceMap::ShowDebugValue(const float& Value, const FVector& CenterCaseDebug)
-{
-	FNumberFormattingOptions NumberFormat;
-	NumberFormat.MinimumIntegralDigits = 1;
-	NumberFormat.MaximumIntegralDigits = 10000;
-	NumberFormat.MinimumFractionalDigits = 0;
-	NumberFormat.MaximumFractionalDigits = 2;
-
-	DrawDebugString(GetWorld(), CenterCaseDebug, FText::AsNumber(Value, &NumberFormat).ToString());
-}

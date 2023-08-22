@@ -1,8 +1,5 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
 #include "InfluenceLayer.h"
-
-#include "Algo/ForEach.h"
+#include "InfluenceTile.h"
 
 UInfluenceLayer::UInfluenceLayer()
 {
@@ -22,10 +19,31 @@ void UInfluenceLayer::SetOffset(const FVector& BoxOriginInfluenceMap)
 	OffsetMap = BoxOriginInfluenceMap;
 }
 
-void UInfluenceLayer::InitializeMapValue()
+void UInfluenceLayer::InitializeLayerTiles(const FVector& Origin, const FVector& Extent, const FRotator& Rotation)
 {
-	LayerValue.SetNumZeroed(SizeLayer);
-	LayerValue[2] = 1.5486f;
+	LayerValue.SetNum(SizeLayer);
+	
+	FVector OffsetCase = Rotation.RotateVector(FVector{ static_cast<double>(SizeCase) });
+	FVector CenterCase = Origin - Extent;
+	FVector CenterFirstCaseNoRotation = Origin - Extent;
+
+	for(int i = 0; i != SizeLayer; ++i)
+	{
+		LayerValue[i] = FInfluenceTile{ RotatePointAroundIM(CenterCase, Origin, Rotation) + OffsetCase };
+
+		UpdateCenterCase(CenterCase, CenterFirstCaseNoRotation, i);
+	}
+
+	LayerValue[2].SetValue(1.5486f);
+}
+
+FVector UInfluenceLayer::RotatePointAroundIM(const FVector& Point, const FVector& Origin, const FRotator& Rotation) const {
+	const FTransform TransformedOrigin = FTransform(Origin);
+
+	FVector RotatedPoint = TransformedOrigin.InverseTransformPosition(Point);
+	RotatedPoint = Rotation.RotateVector(RotatedPoint);
+
+	return TransformedOrigin.TransformPosition(RotatedPoint);
 }
 
 int UInfluenceLayer::ConvertVector3DToIndex(const FVector& Position)
@@ -42,13 +60,12 @@ FVector UInfluenceLayer::ConvertIndexToVector3D(const int& Index)
 	return FVector{ X, Y, Z };
 }
 
-void UInfluenceLayer::CreateLayer(const FVector& Origin, const FVector& Extent)
+void UInfluenceLayer::CreateLayer(const FVector& Origin, const FVector& Extent, const FRotator& Rotation)
 {
-	// TODO : attention au rotation de la map
 	SetDimensions(Extent);
 	SetOffset(Origin);
 	SetSizeLayer();
-	InitializeMapValue();
+	InitializeLayerTiles(Origin, Extent, Rotation);
 }
 
 void UInfluenceLayer::SetSizeLayer()
@@ -57,57 +74,32 @@ void UInfluenceLayer::SetSizeLayer()
 	SizeLayer = SizeLayerXY * DimensionsLayer.Z;
 }
 
-TOptional<float> UInfluenceLayer::GetValue(const FVector& Position)
+TOptional<float> UInfluenceLayer::GetValueAtPosition(const FVector& Position)
 {
-	TOptional<float> Value{};
-	
-	if((Position.X >= OffsetMap.X && Position.X <= DimensionsLayer.X * SizeCase) && 
-	   (Position.Y >= OffsetMap.Y && Position.Y <= DimensionsLayer.Y * SizeCase) &&
-	   (Position.Z >= OffsetMap.Z && Position.Z <= DimensionsLayer.Z * SizeCase))
+	return GetValueAtIndex(ConvertVector3DToIndex(Position));
+}
+
+TOptional<float> UInfluenceLayer::GetValueAtIndex(const int& Index)
+{
+	return LayerValue.IsValidIndex(Index) ? TOptional<float>{ LayerValue[Index].GetValue() } : TOptional<float>{};
+}
+
+void UInfluenceLayer::UpdateCenterCase(FVector& CenterCase, const FVector& CenterFirstCase, const int& Index)
+{
+	if ((Index + 1) % SizeLayerXY == 0) 
 	{
-		Value.Emplace(LayerValue[ConvertVector3DToIndex(Position)]);
+		CenterCase.X = CenterFirstCase.X;
+		CenterCase.Y = CenterFirstCase.Y;
+		CenterCase.Z += 2 * SizeCase;
 	}
-
-	return Value;
-}
-
-TOptional<float> UInfluenceLayer::GetValue(const int& Index)
-{
-	return Index >= 0 && Index < SizeLayer ? TOptional<float>{LayerValue[Index]} : TOptional<float>{};
-}
-
-void UInfluenceLayer::Debug(UWorld* World, const FBoxSphereBounds& BoxBounds)
-{
-	FVector CenterCaseDebug = BoxBounds.Origin - BoxBounds.BoxExtent + SizeCase;
-	const FVector CenterFirstCaseDebug = CenterCaseDebug;
-	FVector VectorSizeCase{ static_cast<double>(SizeCase), static_cast<double>(SizeCase), static_cast<double>(SizeCase) };
-
-	int Index = 0;
-	Algo::ForEach(LayerValue, [&](const int& Value) 
+	else if ((Index + 1) % static_cast<int>(DimensionsLayer.X) == 0)
 	{
-		DrawDebugBox(World, CenterCaseDebug, VectorSizeCase, FColor::Blue, true);
-		DrawDebugString(World, CenterCaseDebug - SizeCase / 10, FString::Printf(TEXT("%d\n%d"), Value, Index));
-		
-		UpdateCenterCaseDebug(CenterCaseDebug, CenterFirstCaseDebug, ++Index);
-	});
-}
-
-void UInfluenceLayer::UpdateCenterCaseDebug(FVector& CenterCaseDebug, const FVector& CenterFirstCaseDebug, const int& Index)
-{
-	if (Index % SizeLayerXY == 0) 
-	{
-		CenterCaseDebug.X = CenterFirstCaseDebug.X;
-		CenterCaseDebug.Y = CenterFirstCaseDebug.Y;
-		CenterCaseDebug.Z += 2 * SizeCase;
-	}
-	else if (Index % static_cast<int>(DimensionsLayer.X) == 0)
-	{
-		CenterCaseDebug.X = CenterFirstCaseDebug.X;
-		CenterCaseDebug.Y += 2 * SizeCase;
+		CenterCase.X = CenterFirstCase.X;
+		CenterCase.Y += 2 * SizeCase;
 	}
 	else 
 	{
-		CenterCaseDebug.X += 2 * SizeCase;
+		CenterCase.X += 2 * SizeCase;
 	}
 }
 
@@ -116,7 +108,7 @@ int UInfluenceLayer::GetSizeCase() const noexcept
 	return SizeCase;
 }
 
-const TArray<float>& UInfluenceLayer::GetLayerValue() const noexcept
+const TArray<FInfluenceTile>& UInfluenceLayer::GetLayerValue() const noexcept
 {
 	return LayerValue;
 }

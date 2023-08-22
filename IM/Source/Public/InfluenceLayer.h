@@ -1,8 +1,7 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
 #pragma once
 
 #include "CoreMinimal.h"
+#include "InfluenceTile.h"
 #include "InfluenceLayer.generated.h"
 
 // TODO : Helper class for Debug part
@@ -17,7 +16,7 @@ private:
 	int SizeCase{};
 
 	UPROPERTY()
-	TArray<float> LayerValue{};
+	TArray<FInfluenceTile> LayerValue{};
 
 	UPROPERTY()
 	FVector DimensionsLayer{};
@@ -32,27 +31,25 @@ public:
 	UInfluenceLayer();
 
 	int GetSizeCase() const noexcept;
-	const TArray<float>& GetLayerValue() const noexcept;
+	const TArray<FInfluenceTile>& GetLayerValue() const noexcept;
 
 	UFUNCTION()
-	void CreateLayer(const FVector& Origin, const FVector& Extent);
+	void CreateLayer(const FVector& Origin, const FVector& Extent, const FRotator& Rotation);
 
 	UFUNCTION()
 	void SetSizeLayer();
 
-	TOptional<float> GetValue(const FVector& Position);
-	TOptional<float> GetValue(const int& Index);
+	TOptional<float> GetValueAtPosition(const FVector& Position);
+	TOptional<float> GetValueAtIndex(const int& Index);
 
-	void Debug(UWorld* World, const FBoxSphereBounds& BoxBounds);
-	void UpdateCenterCaseDebug(FVector& CenterCaseDebug, const FVector& CenterFirstCaseDebug, const int& Index);
+	void UpdateCenterCase(FVector& CenterCase, const FVector& CenterFirstCase, const int& Index);
 
 private:
 	void SetDimensions(const FVector& BoxExtentInfluenceMap);
 	void SetOffset(const FVector& BoxOriginInfluenceMap);
-	void InitializeMapValue();
+	void InitializeLayerTiles(const FVector& Origin, const FVector& Extent, const FRotator& Rotation);
+	FVector RotatePointAroundIM(const FVector& Point, const FVector& Origin, const FRotator& Rotation) const;
 
 	int ConvertVector3DToIndex(const FVector& Position);
 	FVector ConvertIndexToVector3D(const int& Index);
-
-	// TODO : operator [] instead of GetValue
 };
