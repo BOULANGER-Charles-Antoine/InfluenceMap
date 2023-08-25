@@ -1,8 +1,19 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "InfluenceMapDebugHelper.generated.h"
 
 class AInfluenceMap;
+
+USTRUCT()
+struct IM_API FInfluenceMapDebugHelperParameters
+{
+	GENERATED_BODY()
+
+	FString NameLayer;
+
+	FInfluenceMapDebugHelperParameters() = default;
+};
 
 class IM_API InfluenceMapDebugHelper
 {

@@ -12,7 +12,10 @@ class IM_API UInfluenceLayer : public UObject
 	GENERATED_BODY()
 
 private:
-	UPROPERTY(EditAnywhere, meta = (ClampMin = 0, UIMin = 0, ForceUnits = "Meters"))
+	UPROPERTY(EditAnywhere)
+	FString Name {};
+
+	UPROPERTY(EditAnywhere, meta = (ClampMin = 0, UIMin = 0))
 	int SizeCase{};
 
 	UPROPERTY()
@@ -20,12 +23,15 @@ private:
 
 	UPROPERTY()
 	FVector DimensionsLayer{};
+
 	UPROPERTY()
 	FVector OffsetMap{};
+
 	UPROPERTY()
-	int SizeLayer;
+	int32 SizeLayer;
+
 	UPROPERTY()
-	int SizeLayerXY;
+	int32 SizeLayerXY;
 
 public:
 	UInfluenceLayer();
@@ -35,6 +41,9 @@ public:
 
 	UFUNCTION()
 	void CreateLayer(const FVector& Origin, const FVector& Extent, const FRotator& Rotation);
+
+	UFUNCTION(BlueprintCallable)
+	FString GetName();
 
 	UFUNCTION()
 	void SetSizeLayer();
@@ -47,8 +56,9 @@ public:
 private:
 	void SetDimensions(const FVector& BoxExtentInfluenceMap);
 	void SetOffset(const FVector& BoxOriginInfluenceMap);
+	void InitializeCenterTiles(const FVector& Origin, const FVector& Extent, const FRotator& Rotation);
 	void InitializeLayerTiles(const FVector& Origin, const FVector& Extent, const FRotator& Rotation);
-	FVector RotatePointAroundIM(const FVector& Point, const FVector& Origin, const FRotator& Rotation) const;
+	FVector RotatePointAroundIM(const FVector& Point, const FTransform& Transform, const FRotator& Rotation) const;
 
 	int ConvertVector3DToIndex(const FVector& Position);
 	FVector ConvertIndexToVector3D(const int& Index);

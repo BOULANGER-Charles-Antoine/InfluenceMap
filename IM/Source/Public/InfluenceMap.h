@@ -4,18 +4,6 @@
 #include "GameFramework/Actor.h"
 #include "InfluenceMap.generated.h"
 
-USTRUCT()
-struct FIMPair
-{
-	GENERATED_BODY()
-
-	UPROPERTY(EditAnywhere)
-	FString Name{};
-
-	UPROPERTY(EditAnywhere)
-	TSubclassOf<class UInfluenceLayer> Layer{};
-};
-
 UCLASS()
 class IM_API AInfluenceMap : public AActor
 {
@@ -23,7 +11,7 @@ class IM_API AInfluenceMap : public AActor
 
 private:
 	UPROPERTY(EditDefaultsOnly)
-	TArray<FIMPair> InfluenceMap{};
+	TArray<TSubclassOf<class UInfluenceLayer>> InfluenceMap{};
 
 	UPROPERTY(EditDefaultsOnly, Category = "Debug")
 	bool ShowZeroDebug{};
@@ -34,8 +22,7 @@ protected:
 
 	UPROPERTY(BlueprintReadOnly)
 	FVector IMDimension{};
-
-protected:
+	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	UStaticMeshComponent* LimitsInfluenceMap{};
 
@@ -44,10 +31,11 @@ protected:
 	virtual void BeginPlay() override;
 
 public:
+	void CreateLimits();
 	// Sets default values for this actor's properties
 	AInfluenceMap();
 
-	const TArray<FIMPair>& GetLayers() const noexcept;
+	const TArray<TSubclassOf<UInfluenceLayer>>& GetLayers() const noexcept;
 	bool GetShowZeroDebug() const noexcept;
 	FRotator GetIMRotation() const noexcept;
 

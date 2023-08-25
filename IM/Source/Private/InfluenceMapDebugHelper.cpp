@@ -6,16 +6,17 @@
 
 void InfluenceMapDebugHelper::ShowInfluenceMapDebug(const AInfluenceMap* InfluenceMap, const FString& NameLayer)
 {
-	const FIMPair* IMPair = Algo::FindBy(InfluenceMap->GetLayers(), NameLayer, &FIMPair::Name);
-
-	if(IMPair)
+	auto IMLayer = Algo::FindByPredicate(InfluenceMap->GetLayers(), [&](const TSubclassOf<UInfluenceLayer>& Layer)
 	{
-		TSubclassOf<UInfluenceLayer> Layer = IMPair->Layer;
+		return Layer.GetDefaultObject()->GetName() == NameLayer;
+	});
 
-		FVector VectorSizeCase{ static_cast<double>(Layer.GetDefaultObject()->GetSizeCase()) };
+	if(IMLayer)
+	{
+		FVector VectorSizeCase{ static_cast<double>(IMLayer->GetDefaultObject()->GetSizeCase()) };
 
 		int Index = 0;
-		Algo::ForEach(Layer.GetDefaultObject()->GetLayerValue(), [&](const FInfluenceTile& InfluenceTile) 
+		Algo::ForEach(IMLayer->GetDefaultObject()->GetLayerValue(), [&](const FInfluenceTile& InfluenceTile)
 		{
 			DrawDebugBox(InfluenceMap->GetWorld(), InfluenceTile.GetCenter(), VectorSizeCase, InfluenceMap->GetIMRotation().Quaternion(), FColor::Blue, true);
 

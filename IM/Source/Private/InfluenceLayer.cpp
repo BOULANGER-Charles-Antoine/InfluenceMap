@@ -23,27 +23,52 @@ void UInfluenceLayer::InitializeLayerTiles(const FVector& Origin, const FVector&
 {
 	LayerValue.SetNum(SizeLayer);
 	
-	FVector OffsetCase = Rotation.RotateVector(FVector{ static_cast<double>(SizeCase) });
-	FVector CenterCase = Origin - Extent;
-	FVector CenterFirstCaseNoRotation = Origin - Extent;
-
-	for(int i = 0; i != SizeLayer; ++i)
-	{
-		LayerValue[i] = FInfluenceTile{ RotatePointAroundIM(CenterCase, Origin, Rotation) + OffsetCase };
-
-		UpdateCenterCase(CenterCase, CenterFirstCaseNoRotation, i);
-	}
+	InitializeCenterTiles(Origin, Extent, Rotation);
 
 	LayerValue[2].SetValue(1.5486f);
 }
 
-FVector UInfluenceLayer::RotatePointAroundIM(const FVector& Point, const FVector& Origin, const FRotator& Rotation) const {
-	const FTransform TransformedOrigin = FTransform(Origin);
+void UInfluenceLayer::InitializeCenterTiles(const FVector& Origin, const FVector& Extent, const FRotator& Rotation)
+{
+	const FVector OffsetCase = Rotation.RotateVector(FVector{ static_cast<double>(SizeCase) });
+	FVector CenterCase = Origin - Extent;
+	const FVector CenterFirstCase = Origin - Extent;
 
-	FVector RotatedPoint = TransformedOrigin.InverseTransformPosition(Point);
+	for (int i = 0; i != SizeLayer; ++i) 
+	{
+		LayerValue[i] = FInfluenceTile{ RotatePointAroundIM(CenterCase, FTransform(Origin), Rotation) + OffsetCase };
+
+		UpdateCenterCase(CenterCase, CenterFirstCase, i);
+	}
+}
+
+FVector UInfluenceLayer::RotatePointAroundIM(const FVector& Point, const FTransform& Transform, const FRotator& Rotation) const
+{
+	FVector RotatedPoint = Transform.InverseTransformPosition(Point);
 	RotatedPoint = Rotation.RotateVector(RotatedPoint);
 
-	return TransformedOrigin.TransformPosition(RotatedPoint);
+	return Transform.TransformPosition(RotatedPoint);
+}
+
+void UInfluenceLayer::UpdateCenterCase(FVector& CenterCase, const FVector& CenterFirstCase, const int& Index)
+{
+	if ((Index + 1) % SizeLayerXY == 0)
+	{
+		CenterCase.X = CenterFirstCase.X;
+		CenterCase.Y = CenterFirstCase.Y;
+
+		CenterCase.Z += 2 * SizeCase;
+	}
+	else if ((Index + 1) % static_cast<int>(DimensionsLayer.X) == 0)
+	{
+		CenterCase.X = CenterFirstCase.X;
+
+		CenterCase.Y += 2 * SizeCase;
+	}
+	else
+	{
+		CenterCase.X += 2 * SizeCase;
+	}
 }
 
 int UInfluenceLayer::ConvertVector3DToIndex(const FVector& Position)
@@ -68,6 +93,11 @@ void UInfluenceLayer::CreateLayer(const FVector& Origin, const FVector& Extent, 
 	InitializeLayerTiles(Origin, Extent, Rotation);
 }
 
+FString UInfluenceLayer::GetName()
+{
+	return Name;
+}
+
 void UInfluenceLayer::SetSizeLayer()
 {
 	SizeLayerXY = DimensionsLayer.X * DimensionsLayer.Y;
@@ -82,25 +112,6 @@ TOptional<float> UInfluenceLayer::GetValueAtPosition(const FVector& Position)
 TOptional<float> UInfluenceLayer::GetValueAtIndex(const int& Index)
 {
 	return LayerValue.IsValidIndex(Index) ? TOptional<float>{ LayerValue[Index].GetValue() } : TOptional<float>{};
-}
-
-void UInfluenceLayer::UpdateCenterCase(FVector& CenterCase, const FVector& CenterFirstCase, const int& Index)
-{
-	if ((Index + 1) % SizeLayerXY == 0) 
-	{
-		CenterCase.X = CenterFirstCase.X;
-		CenterCase.Y = CenterFirstCase.Y;
-		CenterCase.Z += 2 * SizeCase;
-	}
-	else if ((Index + 1) % static_cast<int>(DimensionsLayer.X) == 0)
-	{
-		CenterCase.X = CenterFirstCase.X;
-		CenterCase.Y += 2 * SizeCase;
-	}
-	else 
-	{
-		CenterCase.X += 2 * SizeCase;
-	}
 }
 
 int UInfluenceLayer::GetSizeCase() const noexcept
