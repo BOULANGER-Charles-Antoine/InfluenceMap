@@ -55,6 +55,8 @@ void AInfluenceMap::BeginPlay()
 	});
 
 	Debug("Test2");
+
+	Debug("Branch1");
 }
 
 void AInfluenceMap::Tick(float DeltaTime)
